@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{% if account %}{{ account.code }} — {{ tf('edit_account') }}{% else %}{{ tf('new_account') }}{% endif %}{% endblock %}
+{% block content %}
+<div class="title-row">
+  <h1>{% if account %}{{ t('edit_account', sec) }}{% else %}{{ t('new_account', sec) }}{% endif %}</h1>
+  <a href="/plan?year={{ year }}">{{ t('back_chart', sec) }}</a>
+</div>
+{% include "errors.html" %}
+{% if analytic_errors %}
+<div class="banner err">
+  {% for key in analytic_errors %}<p>{{ t(key, sec) }}</p>{% endfor %}
+</div>
+{% endif %}
+<form method="post" action="{% if account %}/plan/{{ account.id }}{% else %}/plan{% endif %}" class="narrow">
+  <input type="hidden" name="year" value="{{ year }}">
+  <div class="grid2">
+    <label>{{ t('code', sec) }}<input id="account-code" name="code" required value="{{ fields.code }}" inputmode="numeric"></label>
+    <label>{{ t('statement', sec) }}
+      <select id="statement" name="statement" {% if account %}data-touched="1"{% endif %}>
+        {% for key in ['asset', 'liability', 'equity', 'pl', 'closing'] %}
+        <option value="{{ key }}" {% if fields.statement == key %}selected{% endif %}>{{ L[key]['fr'] }}{% if sec in ['ru', 'de'] %} · {{ L[key][sec] }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <p class="note">{{ t('statement_help', sec) }}</p>
+  <label>{{ t('name_fr', sec) }}<input name="name_fr" required maxlength="200" value="{{ fields.name_fr }}"></label>
+  <label>{{ t('name_de', sec) }}<input name="name_de" maxlength="200" value="{{ fields.name_de }}"></label>
+  <label>{{ t('name_ru', sec) }}<input name="name_ru" maxlength="200" value="{{ fields.name_ru }}"></label>
+  <label class="check"><input type="checkbox" name="active" value="1" {% if fields.active %}checked{% endif %}><span>{{ t('active_account', sec) }}</span></label>
+  <label class="check"><input type="checkbox" name="analytics_required" value="1" {% if fields.analytics_required %}checked{% endif %}><span>{{ t('analytics_required', sec) }}</span></label>
+  <label class="check"><input type="checkbox" name="is_vat" value="1" {% if fields.is_vat %}checked{% endif %}><span>{{ t('vat_account', sec) }}</span></label>
+  <p class="note">{{ t('vat_account_help', sec) }}</p>
+  <p class="actions"><button type="submit" class="primary">{{ t('save', sec) }}</button></p>
+</form>
+{% if account %}
+<section>
+  <h2>{{ t('analytics', sec) }}</h2>
+  <p class="note">{{ t('example_banks', sec) }}</p>
+  {% if not analytics %}<p class="note">{{ t('no_analytic', sec) }}</p>{% endif %}
+  {% for analytic in analytics %}
+  <form method="post" action="/analytiques/{{ analytic.id }}" class="analytic-row">
+    <input type="hidden" name="year" value="{{ year }}">
+    <label>{{ t('analytic_code', sec) }}<input name="code" required value="{{ analytic.code }}" maxlength="20"></label>
+    <label>{{ t('name_fr', sec) }}<input name="name_fr" required value="{{ analytic.name_fr }}" maxlength="200"></label>
+    <label>{{ t('name_de', sec) }}<input name="name_de" value="{{ analytic.name_de }}" maxlength="200"></label>
+    <label>{{ t('name_ru', sec) }}<input name="name_ru" value="{{ analytic.name_ru }}" maxlength="200"></label>
+    <label class="check"><input type="checkbox" name="active" value="1" {% if analytic.active %}checked{% endif %}><span>{{ t('active', sec) }}</span></label>
+    <button type="submit" class="secondary">{{ t('save', sec) }}</button>
+  </form>
+  <form method="post" action="/analytiques/{{ analytic.id }}/supprimer" data-confirm="{{ tconfirm('confirm_delete_analytic', sec) }}">
+    <input type="hidden" name="year" value="{{ year }}">
+    <button type="submit" class="danger">{{ t('delete', sec) }}</button>
+  </form>
+  {% endfor %}
+  <h2>{{ t('add_analytic', sec) }}</h2>
+  <p class="note">{{ t('analytic_code_help', sec) }}</p>
+  <form method="post" action="/plan/{{ account.id }}/analytiques" class="analytic-row">
+    <input type="hidden" name="year" value="{{ year }}">
+    <label>{{ t('analytic_code', sec) }}<input name="code" required value="{{ posted_new.code }}" maxlength="20"></label>
+    <label>{{ t('name_fr', sec) }}<input name="name_fr" required value="{{ posted_new.name_fr }}" maxlength="200"></label>
+    <label>{{ t('name_de', sec) }}<input name="name_de" value="{{ posted_new.name_de }}" maxlength="200"></label>
+    <label>{{ t('name_ru', sec) }}<input name="name_ru" value="{{ posted_new.name_ru }}" maxlength="200"></label>
+    <label class="check"><input type="checkbox" name="active" value="1" {% if posted_new.active %}checked{% endif %}><span>{{ t('active', sec) }}</span></label>
+    <button type="submit" class="primary">{{ t('add', sec) }}</button>
+  </form>
+  {% if can_delete %}
+  <form method="post" action="/plan/{{ account.id }}/supprimer" data-confirm="{{ tconfirm('confirm_delete_account', sec) }}">
+    <input type="hidden" name="year" value="{{ year }}">
+    <button type="submit" class="danger">{{ t('delete', sec) }}</button>
+  </form>
+  {% else %}
+  <p class="note">{{ t('err_used', sec) }}</p>
+  {% endif %}
+</section>
+{% else %}
+<p class="note">{{ t('analytics_after_save', sec) }}</p>
+{% endif %}
+{% endblock %}

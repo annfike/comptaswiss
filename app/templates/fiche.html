@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ account.code }} — {{ tf('ledger') }}{% endblock %}
+{% block content %}
+{% if company %}<p class="company">{{ company }}</p>{% endif %}
+<div class="title-row">
+  <h1>{{ t('ledger', sec) }}</h1>
+  <button type="button" class="secondary noprint" onclick="window.print()">{{ t('print', sec) }}</button>
+</div>
+<p class="account-head">{{ account.code }} · {{ account.name_fr }}{% if account.sub %}<span class="sub">{{ account.sub }}</span>{% endif %}</p>
+<p class="period">01.01.{{ year }} – 31.12.{{ year }}</p>
+<form class="filters noprint" method="get">
+  <input type="hidden" name="year" value="{{ year }}">
+  <label>{{ t('analytic', sec) }}
+    <select name="analytique" onchange="this.form.submit()">
+      <option value="" {% if analytic_filter == '' %}selected{% endif %}>{{ L['all_analytics']['fr'] }}{% if sec in ['ru', 'de'] %} · {{ L['all_analytics'][sec] }}{% endif %}</option>
+      <option value="0" {% if analytic_filter == '0' %}selected{% endif %}>{{ L['sans_analytic']['fr'] }}{% if sec in ['ru', 'de'] %} · {{ L['sans_analytic'][sec] }}{% endif %}</option>
+      {% for analytic in analytics %}
+      <option value="{{ analytic.id }}" {% if analytic_filter == analytic.id|string %}selected{% endif %}>{{ analytic.label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+</form>
+<table class="report nums">
+  <thead>
+    <tr>
+      <th>{{ t('date', sec) }}</th>
+      <th>{{ t('piece', sec) }}</th>
+      <th>{{ t('label_field', sec) }}</th>
+      <th>{{ t('counterpart', sec) }}</th>
+      {% if analytics %}<th>{{ t('analytic', sec) }}</th>{% endif %}
+      <th class="num">{{ t('debit', sec) }}</th>
+      <th class="num">{{ t('credit', sec) }}</th>
+      <th class="num">{{ t('closing_balance', sec) }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="subtotal">
+      <td colspan="{{ 4 if not analytics else 5 }}">{{ t('opening_balance', sec) }}</td>
+      <td></td>
+      <td></td>
+      <td class="num">{% if report.opening >= 0 %}{{ report.opening | chf(True) }} D{% else %}{{ (0 - report.opening) | chf(True) }} C{% endif %}</td>
+    </tr>
+    {% for line in report.lines %}
+    <tr>
+      <td>{{ line.date | sdate }}</td>
+      <td>{{ line.piece }}</td>
+      <td>
+        <a href="/ecritures/{{ line.entry_id }}?year={{ year }}">{{ line.label }}</a>
+      </td>
+      <td>
+        {{ line.contra }}
+        {% if line.compound %}<span class="sub">{{ L['compound']['fr'] }}{% if sec in ['ru', 'de'] %} · {{ L['compound'][sec] }}{% endif %}</span>{% endif %}
+      </td>
+      {% if analytics %}
+      <td>{{ line.analytic }}{% if line.analytic_sub %}<span class="sub">{{ line.analytic_sub }}</span>{% endif %}</td>
+      {% endif %}
+      <td class="num">{{ line.debit | chf }}</td>
+      <td class="num">{{ line.credit | chf }}</td>
+      <td class="num">{% if line.balance >= 0 %}{{ line.balance | chf(True) }} D{% else %}{{ (0 - line.balance) | chf(True) }} C{% endif %}</td>
+    </tr>
+    {% endfor %}
+    {% if not report.lines %}
+    <tr><td colspan="{{ 7 if not analytics else 8 }}" class="note">{{ t('no_lines_account', sec) }}</td></tr>
+    {% endif %}
+  </tbody>
+  <tfoot>
+    <tr class="total">
+      <td colspan="{{ 4 if not analytics else 5 }}">{{ t('closing_balance', sec) }}</td>
+      <td></td>
+      <td></td>
+      <td class="num">{% if report.closing >= 0 %}{{ report.closing | chf(True) }} D{% else %}{{ (0 - report.closing) | chf(True) }} C{% endif %}</td>
+    </tr>
+  </tfoot>
+</table>
+{% if account.statement == 'pl' %}<p class="note">{{ t('ledger_note', sec) }}</p>{% endif %}
+{% endblock %}

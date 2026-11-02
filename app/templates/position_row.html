@@ -1,0 +1,22 @@
+<tr>
+  <td>
+    <a href="/comptes/{{ row.id }}/fiche?year={{ year }}">{{ row.code }}</a>
+    {{ row.name_fr }}
+    {% if row.sub %}<span class="sub">{{ row.sub }}</span>{% endif %}
+  </td>
+  <td class="num {% if row.amount < 0 %}neg{% endif %}">{{ row.amount | chf }}</td>
+</tr>
+{% for analytic in row.analytics %}
+<tr class="analytic">
+  <td class="indent">
+    {% if analytic.sans %}
+      {{ t('sans_analytic', sec) }}
+    {% else %}
+      <a href="/comptes/{{ row.id }}/fiche?year={{ year }}&analytique={{ analytic.analytic_id }}">{{ analytic.code }}</a>
+      {{ analytic.name_fr }}
+      {% if analytic.sub %}<span class="sub">{{ analytic.sub }}</span>{% endif %}
+    {% endif %}
+  </td>
+  <td class="num {% if analytic.amount < 0 %}neg{% endif %}">{{ analytic.amount | chf }}</td>
+</tr>
+{% endfor %}

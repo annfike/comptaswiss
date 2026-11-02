@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ tf('journal') }} — ComptaSwiss{% endblock %}
+{% block content %}
+{% if company %}<p class="company">{{ company }}</p>{% endif %}
+<div class="title-row">
+  <h1>{{ t('journal', sec) }}</h1>
+  <div class="noprint actions">
+    <a class="btn" href="/ecritures/nouvelle?year={{ year }}">{{ t('new_entry', sec) }}</a>
+    <button type="button" class="secondary" onclick="window.print()">{{ t('print', sec) }}</button>
+  </div>
+</div>
+<p class="period">01.01.{{ year }} – 31.12.{{ year }}</p>
+<form class="filters noprint" method="get">
+  <input type="hidden" name="year" value="{{ year }}">
+  <label>{{ t('search', sec) }}<input type="text" name="q" value="{{ q }}"></label>
+  <label>{{ t('compte_filter', sec) }}<input type="text" name="compte" value="{{ compte }}" placeholder="1020"></label>
+  <button type="submit">{{ t('apply', sec) }}</button>
+</form>
+{% if not entries %}
+<p class="note">{{ t('empty_journal', sec) }}</p>
+{% else %}
+<table class="report journal">
+  <thead>
+    <tr>
+      <th>{{ t('date', sec) }}</th>
+      <th>{{ t('piece', sec) }}</th>
+      <th>{{ t('label_field', sec) }}</th>
+      <th>{{ t('debit', sec) }}</th>
+      <th>{{ t('credit', sec) }}</th>
+      <th class="num">{{ t('amount', sec) }}</th>
+      <th class="noprint"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr>
+      <td>{{ entry.entry_date | sdate }}</td>
+      <td>{{ entry.piece }}</td>
+      <td>
+        {{ entry.label }}
+      </td>
+      <td>{% for line in entry.debits %}{% include "journal_line.html" %}{% endfor %}</td>
+      <td>{% for line in entry.credits %}{% include "journal_line.html" %}{% endfor %}</td>
+      <td class="num">{{ entry.amount | chf }}</td>
+      <td class="noprint"><a href="/ecritures/{{ entry.id }}?year={{ year }}">{{ t('edit', sec) }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

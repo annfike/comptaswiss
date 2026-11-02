@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{% if entry_id %}{{ tf('edit_entry') }}{% else %}{{ tf('new_entry') }}{% endif %} — ComptaSwiss{% endblock %}
+{% block content %}
+<div class="title-row">
+  <h1>{% if entry_id %}{{ t('edit_entry', sec) }}{% else %}{{ t('new_entry', sec) }}{% endif %}</h1>
+  <a class="noprint" href="/journal?year={{ year }}">{{ t('back_journal', sec) }}</a>
+</div>
+{% include "errors.html" %}
+<form method="post" action="{% if entry_id %}/ecritures/{{ entry_id }}{% else %}/ecritures{% endif %}" autocomplete="off" id="entry-form" data-net="{{ L['err_network']['fr'] }}{% if sec in ['ru', 'de'] %} · {{ L['err_network'][sec] }}{% endif %}">
+  <input type="hidden" name="year" value="{{ year }}">
+  <div class="grid2">
+    <label>{{ t('date', sec) }}<input type="date" name="entry_date" required value="{{ meta.entry_date }}"></label>
+    <label>{{ t('piece', sec) }}<input type="text" name="piece" value="{{ meta.piece }}" maxlength="40"></label>
+  </div>
+  <label>{{ t('label_field', sec) }}<input type="text" name="label" required maxlength="500" value="{{ meta.label }}"></label>
+  <label class="shared-amount" {% if meta.compound %}hidden{% endif %}>{{ t('amount', sec) }}<input class="money" type="text" name="amount" id="entry-amount" inputmode="decimal" value="{{ meta.amount }}"></label>
+  <table class="entry-lines" id="lines">
+    <thead>
+      <tr>
+        <th>{{ t('account', sec) }}</th>
+        <th>{{ t('analytic', sec) }}</th>
+        <th>{{ t('side', sec) }}</th>
+        <th class="num line-amt" {% if not meta.compound %}hidden{% endif %}>{{ t('amount', sec) }}</th>
+        <th class="noprint"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+      <tr class="line">
+        <td>
+          <input class="acct-filter" type="text" placeholder="{{ tf('filter_account') }}" autocomplete="off">
+          <select name="account_id">
+            <option value="">—</option>
+            {% for group in groups %}
+            <optgroup label="{{ group.label }}">
+              {% for account in group.accounts %}
+              <option value="{{ account.id }}" data-required="{{ account.analytics_required }}" data-active="{{ account.active }}" {% if line.account_id|string == account.id|string %}selected{% endif %}>{{ account.label }}</option>
+              {% endfor %}
+            </optgroup>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="analytic-cell">
+          <select name="analytic_id">
+            <option value="">—</option>
+            {% for analytic in analytics %}
+            <option value="{{ analytic.id }}" data-account="{{ analytic.account_id }}" data-active="{{ analytic.active }}" {% if line.analytic_id|string == analytic.id|string %}selected{% endif %}>{{ analytic.label }}</option>
+            {% endfor %}
+          </select>
+          <button type="button" class="secondary add-analytic" hidden>{{ t('add_analytic', sec) }}</button>
+          <div class="new-analytic" hidden>
+            <input class="na-code" type="text" maxlength="20" autocomplete="off" placeholder="UBS">
+            <input class="na-fr" type="text" maxlength="200" autocomplete="off" placeholder="{{ L['name_fr']['fr'] }}">
+            {% if sec == 'ru' %}
+            <input class="na-sec" data-lang="ru" type="text" maxlength="200" autocomplete="off" placeholder="{{ L['name_ru']['ru'] }}">
+            {% elif sec == 'de' %}
+            <input class="na-sec" data-lang="de" type="text" maxlength="200" autocomplete="off" placeholder="{{ L['name_de']['de'] }}">
+            {% endif %}
+            <button type="button" class="secondary na-save">{{ t('add', sec) }}</button>
+            <p class="na-error" hidden></p>
+          </div>
+        </td>
+        <td>
+          <select name="side">
+            <option value="debit" {% if line.side != 'credit' %}selected{% endif %}>{{ L['debit']['fr'] }}{% if sec in ['ru', 'de'] %} · {{ L['debit'][sec] }}{% endif %}</option>
+            <option value="credit" {% if line.side == 'credit' %}selected{% endif %}>{{ L['credit']['fr'] }}{% if sec in ['ru', 'de'] %} · {{ L['credit'][sec] }}{% endif %}</option>
+          </select>
+        </td>
+        <td class="line-amt" {% if not meta.compound %}hidden{% endif %}><input class="money" type="text" name="line_amount" inputmode="decimal" value="{{ line.amount }}"></td>
+        <td class="noprint"><button type="button" class="secondary remove-line">{{ t('remove_line', sec) }}</button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="actions">
+    <button type="button" class="secondary" id="add-line">{{ t('add_line', sec) }}</button>
+    <button type="submit" class="primary">{{ t('save_entry', sec) }}</button>
+  </p>
+</form>
+{% if entry_id %}
+<form class="noprint" method="post" action="/ecritures/{{ entry_id }}/supprimer" data-confirm="{{ tconfirm('confirm_delete_entry', sec) }}">
+  <input type="hidden" name="year" value="{{ year }}">
+  <button type="submit" class="danger">{{ t('delete', sec) }}</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ tf('dashboard') }} — ComptaSwiss{% endblock %}
+{% block content %}
+<h1>{{ t('dashboard', sec) }}</h1>
+<p class="note">{{ t('dashboard_hint', sec) }}</p>
+<section class="cards">
+  <a class="card" href="/resultat?year={{ year }}">
+    <span>{{ t('home_result', sec) }}</span>
+    <strong class="{% if figures.result < 0 %}neg{% endif %}">{{ figures.result | chf(True) }}</strong>
+  </a>
+  <a class="card" href="/bilan?year={{ year }}">
+    <span>{{ t('assets', sec) }}</span>
+    <strong>{{ figures.assets | chf(True) }}</strong>
+  </a>
+  <a class="card" href="/journal?year={{ year }}">
+    <span>{{ t('journal', sec) }}</span>
+    <strong>{{ figures.count }} <small>{{ t('entries_count', sec) }}</small></strong>
+  </a>
+</section>
+{% if figures.count == 0 %}
+<section class="steps">
+  <h2>{{ t('intro_title', sec) }}</h2>
+  <ol>
+    <li>{{ t('step1', sec) }}</li>
+    <li>{{ t('step3', sec) }}</li>
+  </ol>
+  <p class="actions noprint">
+    <a class="btn" href="/plan?year={{ year }}">{{ t('chart', sec) }}</a>
+    <a class="btn" href="/ecritures/nouvelle?year={{ year }}">{{ t('new_entry', sec) }}</a>
+  </p>
+</section>
+{% else %}
+<section>
+  <h2>{{ t('recent', sec) }}</h2>
+  <table class="report">
+    <thead>
+      <tr>
+        <th>{{ t('date', sec) }}</th>
+        <th>{{ t('piece', sec) }}</th>
+        <th>{{ t('label_field', sec) }}</th>
+        <th class="num">{{ t('amount', sec) }}</th>
+        <th class="noprint"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in recent %}
+      <tr>
+        <td>{{ entry.entry_date | sdate }}</td>
+        <td>{{ entry.piece }}</td>
+        <td>
+          {{ entry.label }}
+        </td>
+        <td class="num">{{ entry.amount | chf }}</td>
+        <td class="noprint"><a href="/ecritures/{{ entry.id }}?year={{ year }}">{{ t('edit', sec) }}</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

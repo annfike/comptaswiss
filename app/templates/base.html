@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ComptaSwiss{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css?v=5">
+</head>
+<body class="{% if sec == 'off' %}no-sec{% endif %}">
+  <div class="layout">
+    <aside class="sidebar noprint">
+      <a class="brand" href="/?year={{ year }}">
+        <span class="brand-name">ComptaSwiss</span>
+        {% if company %}<span class="brand-company">{{ company }}</span>{% endif %}
+      </a>
+      <label class="year-box">
+        {{ t('year', sec) }}
+        <select id="year-select">
+          {% for item in years %}
+          <option value="{{ item }}" {% if item == year %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <nav class="nav">
+        <a href="/?year={{ year }}" class="{% if page == 'home' %}active{% endif %}">{{ t('dashboard', sec) }}</a>
+        <a href="/journal?year={{ year }}" class="{% if page == 'journal' %}active{% endif %}">{{ t('journal', sec) }}</a>
+        <a href="/ecritures/nouvelle?year={{ year }}" class="{% if page == 'entry' %}active{% endif %}">{{ t('new_entry', sec) }}</a>
+        <a href="/plan?year={{ year }}" class="{% if page == 'chart' %}active{% endif %}">{{ t('chart', sec) }}</a>
+        <a href="/balance?year={{ year }}" class="{% if page == 'trial' %}active{% endif %}">{{ t('trial', sec) }}</a>
+        <a href="/bilan?year={{ year }}" class="{% if page == 'balance' %}active{% endif %}">{{ t('balance_sheet', sec) }}</a>
+        <a href="/resultat?year={{ year }}" class="{% if page == 'income' %}active{% endif %}">{{ t('income', sec) }}</a>
+        <a href="/parametres?year={{ year }}" class="{% if page == 'settings' %}active{% endif %}">{{ t('settings', sec) }}</a>
+      </nav>
+      <div class="langs">
+        <div class="lang-label">{{ t('translation', sec) }}</div>
+        <form method="post" action="/parametres/langue">
+          <input type="hidden" name="lang" value="ru">
+          <input type="hidden" name="next" value="{{ here }}">
+          <button type="submit" class="{% if sec == 'ru' %}on{% endif %}">Русский</button>
+        </form>
+        <form method="post" action="/parametres/langue">
+          <input type="hidden" name="lang" value="de">
+          <input type="hidden" name="next" value="{{ here }}">
+          <button type="submit" class="{% if sec == 'de' %}on{% endif %}">Deutsch</button>
+        </form>
+        <form method="post" action="/parametres/langue">
+          <input type="hidden" name="lang" value="off">
+          <input type="hidden" name="next" value="{{ here }}">
+          <button type="submit" class="{% if sec == 'off' %}on{% endif %}">{{ t('hide_translation', sec) }}</button>
+        </form>
+      </div>
+    </aside>
+    <main class="main">
+      {% if msg in FLASH %}
+      <div class="banner ok noprint">{{ t(msg, sec) }}</div>
+      {% elif msg in L and msg.startswith('err_') %}
+      <div class="banner err noprint">{{ t(msg, sec) }}</div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script src="/static/app.js?v=4"></script>
+</body>
+</html>

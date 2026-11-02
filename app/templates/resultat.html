@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ tf('income') }} — ComptaSwiss{% endblock %}
+{% block content %}
+{% if company %}<p class="company">{{ company }}</p>{% endif %}
+<div class="title-row">
+  <h1>{{ t('income', sec) }}</h1>
+  <button type="button" class="secondary noprint" onclick="window.print()">{{ t('print', sec) }}</button>
+</div>
+<p class="period">01.01.{{ year }} – 31.12.{{ year }}</p>
+{% if not report.rows %}
+<p class="note">{{ t('empty_income', sec) }}</p>
+{% else %}
+<table class="report nums">
+  <thead>
+    <tr>
+      <th>{{ t('code', sec) }}</th>
+      <th>{{ t('account', sec) }}</th>
+      <th class="num">{{ t('debit', sec) }}</th>
+      <th class="num">{{ t('credit', sec) }}</th>
+      <th class="num">{{ t('home_result', sec) }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in report.rows %}
+      {% if row.type == 'section' %}
+      <tr class="section"><th colspan="5">{{ t(row.key, sec) }}</th></tr>
+      {% elif row.type == 'account' %}
+      <tr>
+        <td class="code"><a href="/comptes/{{ row.id }}/fiche?year={{ year }}">{{ row.code }}</a></td>
+        <td>{{ row.name_fr }}{% if row.sub %}<span class="sub">{{ row.sub }}</span>{% endif %}</td>
+        <td class="num">{{ row.debit | chf }}</td>
+        <td class="num">{{ row.credit | chf }}</td>
+        <td class="num {% if row.amount < 0 %}neg{% endif %}">{{ row.amount | chf }}</td>
+      </tr>
+      {% for analytic in row.analytics %}
+      <tr class="analytic">
+        <td></td>
+        <td class="indent">
+          {% if analytic.sans %}{{ t('sans_analytic', sec) }}{% else %}
+          <a href="/comptes/{{ row.id }}/fiche?year={{ year }}&analytique={{ analytic.analytic_id }}">{{ analytic.code }}</a>
+          {{ analytic.name_fr }}{% if analytic.sub %}<span class="sub">{{ analytic.sub }}</span>{% endif %}
+          {% endif %}
+        </td>
+        <td class="num">{{ analytic.debit | chf }}</td>
+        <td class="num">{{ analytic.credit | chf }}</td>
+        <td class="num {% if analytic.amount < 0 %}neg{% endif %}">{{ analytic.amount | chf }}</td>
+      </tr>
+      {% endfor %}
+      {% elif row.type == 'section_total' %}
+      <tr class="subtotal">
+        <td></td>
+        <td>{{ L['total']['fr'] }} — {{ L[row.key]['fr'] }}{% if sec in ['ru', 'de'] %}<span class="sub">{{ L['total'][sec] }} — {{ L[row.key][sec] }}</span>{% endif %}</td>
+        <td class="num">{{ row.debit | chf }}</td>
+        <td class="num">{{ row.credit | chf }}</td>
+        <td class="num {% if row.amount < 0 %}neg{% endif %}">{{ row.amount | chf(True) }}</td>
+      </tr>
+      {% elif row.type == 'subtotal' or row.type == 'total' %}
+      <tr class="{% if row.type == 'total' %}total{% else %}subtotal{% endif %}">
+        <td colspan="4">{{ t(row.key, sec) }}</td>
+        <td class="num {% if row.amount < 0 %}neg{% endif %}">{{ row.amount | chf(True) }}</td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

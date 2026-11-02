@@ -1,0 +1,6 @@
+<div class="mini">
+  <a href="/comptes/{{ line.account_id }}/fiche?year={{ year }}{% if line.analytic_id %}&analytique={{ line.analytic_id }}{% endif %}">{{ line.code }}</a>
+  {{ line.name_fr }}
+  {% if line.sub %}<span class="sub">{{ line.sub }}</span>{% endif %}
+  {% if line.analytic %}<span class="analytic-name">{{ line.analytic }}{% if line.analytic_sub %}<span class="sub"> · {{ line.analytic_sub }}</span>{% endif %}</span>{% endif %}
+</div>

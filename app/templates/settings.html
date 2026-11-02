@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ tf('settings') }} — ComptaSwiss{% endblock %}
+{% block content %}
+<h1>{{ t('settings', sec) }}</h1>
+<p class="note">{{ t('settings_intro', sec) }}</p>
+<form method="post" action="/parametres" class="narrow">
+  <input type="hidden" name="year" value="{{ year }}">
+  <label>{{ t('company_name', sec) }}
+    <input type="text" name="company_name" maxlength="200" value="{{ company }}">
+  </label>
+  <p class="note">{{ t('company_hint', sec) }}</p>
+  <fieldset>
+    <legend>{{ t('translation', sec) }}</legend>
+    <label class="check"><input type="radio" name="lang" value="ru" {% if sec == 'ru' %}checked{% endif %}><span>Русский</span></label>
+    <label class="check"><input type="radio" name="lang" value="de" {% if sec == 'de' %}checked{% endif %}><span>Deutsch</span></label>
+    <label class="check"><input type="radio" name="lang" value="off" {% if sec == 'off' %}checked{% endif %}><span>{{ t('hide_translation', sec) }}</span></label>
+  </fieldset>
+  <p class="actions"><button type="submit" class="primary">{{ t('save', sec) }}</button></p>
+</form>
+<section>
+  <h2>{{ t('data_file', sec) }}</h2>
+  <p class="path">{{ db_file }}</p>
+  <p class="note">{{ t('backup_hint', sec) }}</p>
+  <p class="note">{{ t('stop_hint', sec) }}</p>
+  <p class="note">{{ t('vat_future', sec) }}</p>
+</section>
+{% endblock %}

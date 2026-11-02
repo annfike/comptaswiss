@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ tf('trial') }} — ComptaSwiss{% endblock %}
+{% block content %}
+{% if company %}<p class="company">{{ company }}</p>{% endif %}
+<div class="title-row">
+  <h1>{{ t('trial', sec) }}</h1>
+  <button type="button" class="secondary noprint" onclick="window.print()">{{ t('print', sec) }}</button>
+</div>
+<p class="period">01.01.{{ year }} – 31.12.{{ year }}</p>
+<form class="filters noprint" method="get">
+  <input type="hidden" name="year" value="{{ year }}">
+  <input type="hidden" name="detail" value="0">
+  <label class="check">
+    <input type="checkbox" name="detail" value="1" {% if detail %}checked{% endif %}>
+    <span>{{ t('by_analytic', sec) }}</span>
+  </label>
+  <button type="submit">{{ t('apply', sec) }}</button>
+</form>
+{% if not report.rows %}
+<p class="note">{{ t('empty_report', sec) }}</p>
+{% else %}
+<table class="report nums">
+  <thead>
+    <tr>
+      <th>{{ t('code', sec) }}</th>
+      <th>{{ t('account', sec) }}</th>
+      <th class="num">{{ t('opening_dr', sec) }}</th>
+      <th class="num">{{ t('opening_cr', sec) }}</th>
+      <th class="num">{{ t('turnover_dr', sec) }}</th>
+      <th class="num">{{ t('turnover_cr', sec) }}</th>
+      <th class="num">{{ t('closing_dr', sec) }}</th>
+      <th class="num">{{ t('closing_cr', sec) }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in report.rows %}
+    <tr>
+      <td class="code"><a href="/comptes/{{ row.id }}/fiche?year={{ year }}">{{ row.code }}</a></td>
+      <td>{{ row.name_fr }}{% if row.sub %}<span class="sub">{{ row.sub }}</span>{% endif %}</td>
+      <td class="num">{{ row.ouv_d | chf }}</td>
+      <td class="num">{{ row.ouv_c | chf }}</td>
+      <td class="num">{{ row.mov_d | chf }}</td>
+      <td class="num">{{ row.mov_c | chf }}</td>
+      <td class="num">{{ row.sol_d | chf }}</td>
+      <td class="num">{{ row.sol_c | chf }}</td>
+    </tr>
+    {% for analytic in row.analytics %}
+    <tr class="analytic">
+      <td></td>
+      <td class="indent">
+        {% if analytic.sans %}{{ t('sans_analytic', sec) }}{% else %}{{ analytic.code }} · {{ analytic.name_fr }}{% if analytic.sub %}<span class="sub">{{ analytic.sub }}</span>{% endif %}{% endif %}
+      </td>
+      <td class="num">{{ analytic.ouv_d | chf }}</td>
+      <td class="num">{{ analytic.ouv_c | chf }}</td>
+      <td class="num">{{ analytic.mov_d | chf }}</td>
+      <td class="num">{{ analytic.mov_c | chf }}</td>
+      <td class="num">{{ analytic.sol_d | chf }}</td>
+      <td class="num">{{ analytic.sol_c | chf }}</td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr class="total">
+      <td></td>
+      <td>{{ t('total', sec) }}</td>
+      <td class="num">{{ report.totals.ouv_d | chf(True) }}</td>
+      <td class="num">{{ report.totals.ouv_c | chf(True) }}</td>
+      <td class="num">{{ report.totals.mov_d | chf(True) }}</td>
+      <td class="num">{{ report.totals.mov_c | chf(True) }}</td>
+      <td class="num">{{ report.totals.sol_d | chf(True) }}</td>
+      <td class="num">{{ report.totals.sol_c | chf(True) }}</td>
+    </tr>
+  </tfoot>
+</table>
+<p class="note">{% if report.balanced %}{{ t('balanced_ok', sec) }}{% else %}{{ t('difference', sec) }}{% endif %}</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ tf('balance_sheet') }} — ComptaSwiss{% endblock %}
+{% block content %}
+{% if company %}<p class="company">{{ company }}</p>{% endif %}
+<div class="title-row">
+  <h1>{{ t('balance_sheet', sec) }}</h1>
+  <button type="button" class="secondary noprint" onclick="window.print()">{{ t('print', sec) }}</button>
+</div>
+<p class="period">31.12.{{ year }}</p>
+{% if report.total_assets == 0 and report.total_passifs == 0 %}
+<p class="note">{{ t('empty_report', sec) }}</p>
+{% endif %}
+<table class="report nums">
+  <tbody>
+    <tr class="section"><th colspan="2">{{ t('assets', sec) }}</th></tr>
+    {% for group in report.asset_groups %}
+    <tr class="group"><th colspan="2">{{ t(group.key, sec) }}</th></tr>
+    {% for row in group.accounts %}
+    {% include "position_row.html" %}
+    {% endfor %}
+    {% endfor %}
+    <tr class="total">
+      <td>{{ t('total_assets', sec) }}</td>
+      <td class="num">{{ report.total_assets | chf(True) }}</td>
+    </tr>
+    {% if report.liability_groups %}
+    <tr class="section"><th colspan="2">{{ t('liabilities_title', sec) }}</th></tr>
+    {% for group in report.liability_groups %}
+    <tr class="group"><th colspan="2">{{ t(group.key, sec) }}</th></tr>
+    {% for row in group.accounts %}
+    {% include "position_row.html" %}
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+    <tr class="section"><th colspan="2">{{ t('equity_title', sec) }}</th></tr>
+    {% for group in report.equity_groups %}
+    <tr class="group"><th colspan="2">{{ t(group.key, sec) }}</th></tr>
+    {% for row in group.accounts %}
+    {% include "position_row.html" %}
+    {% endfor %}
+    {% endfor %}
+    <tr>
+      <td>{{ t('result_year', sec) }}</td>
+      <td class="num {% if report.result_year < 0 %}neg{% endif %}">{{ report.result_year | chf(True) }}</td>
+    </tr>
+    {% if report.result_prior %}
+    <tr>
+      <td>{{ t('result_prior', sec) }}</td>
+      <td class="num {% if report.result_prior < 0 %}neg{% endif %}">{{ report.result_prior | chf(True) }}</td>
+    </tr>
+    {% endif %}
+    {% if report.closing_rows %}
+    <tr class="group"><th colspan="2">{{ t('closing_section', sec) }}</th></tr>
+    {% for row in report.closing_rows %}
+    {% include "position_row.html" %}
+    {% endfor %}
+    {% endif %}
+    <tr class="total">
+      <td>{{ t('total_liabilities', sec) }}</td>
+      <td class="num">{{ report.total_passifs | chf(True) }}</td>
+    </tr>
+  </tbody>
+</table>
+<p class="note">{% if report.difference == 0 %}{{ t('balanced_ok', sec) }}{% else %}{{ t('difference', sec) }} {{ report.difference | chf(True) }}{% endif %}</p>
+<p class="note">{{ t('close_year_note', sec) }}</p>
+{% endblock %}

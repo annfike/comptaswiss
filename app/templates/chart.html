@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ tf('chart') }} — ComptaSwiss{% endblock %}
+{% block content %}
+<div class="title-row">
+  <h1>{{ t('chart', sec) }}</h1>
+  <a class="btn noprint" href="/plan/nouveau?year={{ year }}">{{ t('new_account', sec) }}</a>
+</div>
+<p class="note">{{ t('plan_intro', sec) }}</p>
+<p class="note">{{ t('example_banks', sec) }}</p>
+<p class="note">{{ t('capital_note', sec) }}</p>
+<p class="note">{{ t('vat_future', sec) }}</p>
+<div class="filters noprint">
+  <label>{{ t('filter_chart', sec) }}<input type="text" id="chart-filter" autocomplete="off"></label>
+  {% if show_inactive %}
+  <a href="/plan?year={{ year }}">{{ t('active', sec) }}</a>
+  {% else %}
+  <a href="/plan?year={{ year }}&inactifs=1">{{ t('show_inactive', sec) }}</a>
+  {% endif %}
+</div>
+<table class="report" id="chart">
+  <thead>
+    <tr>
+      <th>{{ t('code', sec) }}</th>
+      <th>{{ t('account', sec) }}</th>
+      <th>{{ t('statement', sec) }}</th>
+      <th>{{ t('analytics', sec) }}</th>
+      <th class="noprint"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for group in groups %}
+    <tr class="classhead"><th colspan="5">{{ group.label }}</th></tr>
+    {% for account in group.accounts %}
+    <tr class="acct {% if not account.active %}inactive{% endif %}" data-search="{{ account.search }}">
+      <td class="code"><a href="/comptes/{{ account.id }}/fiche?year={{ year }}">{{ account.code }}</a></td>
+      <td>
+        {{ account.name_fr }}
+        {% if account.sub %}<span class="sub">{{ account.sub }}</span>{% endif %}
+        {% if account.is_vat %}<span class="badge">{{ t('vat', sec) }}</span>{% endif %}
+        {% if not account.active %}<span class="badge">{{ t('inactive', sec) }}</span>{% endif %}
+      </td>
+      <td>{{ t(account.statement, sec) }}</td>
+      <td>
+        {% if account.analytic_count %}{{ account.analytic_count }}{% else %}—{% endif %}
+        {% if account.analytics_required %}<span class="badge">{{ t('analytics_required', sec) }}</span>{% endif %}
+      </td>
+      <td class="noprint"><a href="/plan/{{ account.id }}?year={{ year }}">{{ t('edit', sec) }}</a></td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

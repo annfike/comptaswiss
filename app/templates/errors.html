@@ -1,0 +1,5 @@
+{% if errors %}
+<div class="banner err">
+  {% for key in errors %}<p>{{ t(key, sec) }}</p>{% endfor %}
+</div>
+{% endif %}
